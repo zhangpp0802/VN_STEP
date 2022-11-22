@@ -1,0 +1,54 @@
+fluent ActiveTask ?parent ?child.
+fluent Mentioned ?p.
+
+[main]
+AnswerDoor ?p:
+    [set Distance = 0]
+    [set Person = ?p]
+    [Do answer_the_door] 
+[end]
+
+Do ?p:
+    [Goal ?p]
+[end]
+
+Act ?p:
+    [Action ?p]
+[end]
+
+SubGoal ?root ?behavior: [now[ActiveTask ?root ?behavior]]
+Mention ?p: [Mentioned ?who] ?p/GivenName
+Mention ?p: ?p/GivenName+FamName [now [Mentioned ?who]]
+Greet ?p: Hi, [Mention ?p]!
+
+Goal answer_the_door:
+    [SubGoal answer_the_door open_door]
+    processing open door.
+    [inc Distance 8]
+    # [set Person = morty]
+    [Do open_door]
+    [Act sigh]
+    [Do greet_guest]
+[end]
+
+Goal open_door:
+    [<= Distance 5]
+    [SubGoal open_door go_open]
+    You go open the door.
+[end]
+
+Goal open_door:
+    [>= Distance 5]
+    [SubGoal open_door yell_door]
+    Come in! Door's not locked!
+[end]
+
+Action sigh:
+    Ah...
+[end]
+
+Goal greet_guest:
+    [SubGoal open_door greet_guest]
+    [Greet Person]
+    [Greet Person]
+[end]

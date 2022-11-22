@@ -1,0 +1,35 @@
+Character rick.
+AgeOf rick: 70
+Gender rick: male
+GivenName rick: Rick
+FamName rick: Sanchez
+
+Character morty.
+AgeOf morty: 14
+Gender morty: male
+GivenName morty: Morty
+FamName morty: Smith
+
+Character beth.
+AgeOf beth: 33
+Gender beth: female
+GivenName beth: Beth
+FamName beth: Sanchez
+
+Character jerry.
+AgeOf jerry: 33
+Gender jerry: male
+GivenName jerry: Jerry
+FamName jerry: Smith
+
+Character summer.
+AgeOf summer: 17
+Gender summer: female
+GivenName summer: Summer
+FamName summer: Smith
+
+Character birdperson.
+AgeOf birdperson: no reference
+Gender birdperson: male
+GivenName birdperson: Bird
+FamName birdperson: person

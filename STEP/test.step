@@ -1,0 +1,2 @@
+# this is for checking the stateVars current value.
+Print ?v: Current is ?v.

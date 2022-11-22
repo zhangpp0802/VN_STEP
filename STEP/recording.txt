@@ -1,0 +1,9 @@
+[Write :] [Write [?mode]]
+
+[DoAll [Option ?mode ?plotPoint ?]
+    [Write :] [Write [?mode]]]
+
+
+* The fail case of emotions would not pass.
+* How to choose the option (wait for input)
+

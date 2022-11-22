@@ -1,0 +1,787 @@
+predicate Option ?startState ?newState ?text.
+
+# Format of an option declaration:
+# Option from_state to_state text_prompt
+# Option from_state to_state text_prompt: [condition]
+# ctrl+R to reload this project.
+#
+# This says that if you're in from_state then the player has the option to go to to_start and the
+# option should print in the menu as text_prompt.  If you include [condition], then that option will
+# only be displayed when the condition is true.  You can include multiple conditions.
+
+[main]
+Story:
+    [set Resigned = 5]
+    [set Bored = 4]
+    [set Angry = 2]
+    [set Regretful = 0]
+    [set Responsible = 1]
+    [set Resistant = 4]
+    [set Painful = 2]
+    [set Antisocial = 5]
+    [set Location = nowhere]
+    [Do start] 
+[end]
+
+Do ?plotPoint:
+    [set State = ?plotPoint]
+    [PlotPoint ?plotPoint]
+    [Paragraph]
+    [DoAll [Option ?plotPoint ?newPlotPoint ?text]
+           [WriteOption ?newPlotPoint ?text]]
+[end]
+
+# check which point of each stateVar.
+[predicate]
+LowPoint ?v: [<= ?v 2]
+[predicate]
+MildPoint ?v: [<= ?v 4.5]
+[predicate]
+MidPoint ?v: [>= ?v 4.5] [<= ?v 6.5]
+[predicate]
+HighPoint ?v: [>= ?v 5.5] 
+[predicate]
+ExtremePoint ?v: [>= ?v 8]
+
+[predicate]
+Aggressive:[> Angry 5] [HighPoint Antisocial] [HighPoint Resistant]
+[predicate]
+Emotive: [MildPoint Resigned] [MildPoint Bored]
+[predicate]
+Motivated: [MidPoint Responsible]
+[predicate]
+Sociable: [MildPoint Antisocial] [MildPoint Resistant] 
+
+
+WriteOption ?newPlotPoint ?text: [FreshLine] [Link [Do ?newPlotPoint]]<b>?text</b>[EndLink]
+
+PlotPoint start:
+    [Not[Aggressive]]
+    You got caught stealing money.
+    [set Location = court]
+[end]
+
+Option start beat_judge "Beat up the judge".
+Option start attack_judge_room "Attack people in the room".
+Option start apologize_to_judge "Apologize to the judge".
+
+PlotPoint beat_judge:
+    You rush up to the judge and beat him.
+    [inc Resistant 2]
+    [inc Antisocial 2]
+    [inc Angry 3]
+    [Do walkingback]
+[end]
+
+PlotPoint attack_judge_room:
+    You start attacking people in the room. You also start break the vase next to the judge and then everything else in the rooom.
+    [inc Resistant 3]
+    [inc Antisocial 3]
+    [inc Angry 3]
+    [Do walkingback]
+[end]
+
+PlotPoint apologize_to_judge:
+    You apologize to the judge. You bed the judge for mercy.  However, the judge did not take your apology and curved on you that you are just a kid that do not have a mom to educate you.
+    [inc Antisocial]
+    [dec Angry]
+    [dec Resistant]
+    [dec Responsible 0.2]
+[end]
+
+Option apologize_to_judge beat_judge "Beat up the judge": [Aggressive]
+Option apologize_to_judge attack_judge_room "Attack people in the room": [Aggressive]
+Option apologize_to_judge end_of_story "End of Story": [Not[Aggressive]]
+
+PlotPoint walkingback:
+    Walking back with hurt on his body and sixth tattooed on the street and people judge more.
+    [set Location = street]
+    [inc Resigned 0.2]
+    [inc Bored 0.2]
+    [Do backhome]
+[end]
+
+PlotPoint backhome:
+    He found out father feels so ashamed of him and suicide in their house.
+    [set Location = home]
+    [inc Regretful 3]
+    [inc Painful 3]
+    [inc Angry 0.5]
+    [dec Bored 1]
+    [dec Resigned 2]
+    [dec Antisocial]
+[end]
+
+Option backhome huggingdead "Hugging your father's dead body": [Emotive]
+Option backhome laughsatirely "Laughing out loud satirely": [Emotive]
+Option backhome freezed "so shocked and cannot move": [Emotive]
+Option backhome collectingstuff "collecting stuff in the room": [Motivated]
+Option backhome smashingthings "smashing stuff in the room": [Aggressive]
+Option backhome cuttingdeadbody "got knife in the kitchen and keep cutting the dead body": [Aggressive]
+
+PlotPoint huggingdead:
+    Hugging on your father's dead body and crying out really loud, your memory with your dad keep flashing back. 
+    His moral lessons to you keep looping in your ear that make you so regret what you have done.
+    [dec Angry]
+    [inc Resigned 0.2]
+    [inc Regretful 3]
+    [inc Painful 2]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Responsible]
+    [Do neighbortalking]
+[end]
+
+PlotPoint laughsatirely:
+    You laughing out sacaratically. Thinking that your life is just a joke, the only one reason that you still live is your father. 
+    And now he died, you feel extremely depressed not just for the death but the emptyness of what you should do next. 
+    You have not dare to die, yet have no dare to move on leaving. A feeling of emptyness and fear fill your whole heart.
+    [inc Resigned 3]
+    [dec Angry]
+    [dec Resistant 3]
+    [inc Painful]
+    [dec Antisocial]
+    [Do neighbortalking]
+[end]
+
+PlotPoint freezed:
+    You are so shocked about the death of your father. You can barely move, and just stand at the door, staring at this bloody tragedy.
+    [inc Resigned]
+    [dec Angry]
+    [inc Painful]
+    [dec Resistant]
+    [dec Antisocial]
+    [Do neighbortalking]
+[end]
+Option freezed neighbortalking "Hear neighbor talking":[HighPoint Painful]
+Option freezed huggingdead "Hugging your father's dead body": [Emotive]
+Option freezed laughsatirely "Laughing out loud satirely": [Emotive]
+Option freezed collectingstuff "collecting stuff in the room": [Motivated]
+Option freezed smashingthings "smashing stuff in the room": [Aggressive]
+Option freezed cuttingdeadbody "got knife in the kitchen and keep cutting the dead body": [Aggressive]
+
+
+PlotPoint collectingstuff:
+    You collect all the things together, including the chair that your father stand on in order to suicide, the vase at the window fell down for a long time, the bed that spend time with your father in his last few minutes, ....
+    [dec Resistant]
+    [inc Painful]
+    [inc Responsible 3]
+    [dec Antisocial]
+    [dec Angry]
+    [Do neighbortalking]
+[end]
+
+PlotPoint smashingthings:
+    When you saw your fathers' dead body haninng on the rope, you feel so sad and angry about why he did this to you.
+    You think he is using his death to go against what you did and not want to get cured by your dirty money.
+    You shout at the dead body, "people are all selfish, dad, why you cannot understand?".
+    [inc Resigned]
+    [inc Angry]
+    [inc Painful]
+    [dec Regretful]
+    [dec Responsible]
+    [inc Resistant 0.2]
+    [inc Antisocial 0.2]
+[end]
+
+Option smashingthings huggingdead "Hugging your father's dead body": [Emotive]
+Option smashingthings laughsatirely "Laughing out loud satirely": [Emotive]
+Option smashingthings freezed "so shocked and cannot move": [Emotive]
+Option smashingthings collectingstuff "collecting stuff in the room": [Motivated]
+Option smashingthings smashingthings "smashing stuff in the room": [Aggressive]
+Option smashingthings cuttingdeadbody "got knife in the kitchen and keep cutting the dead body": [Aggressive]
+Option smashingthings neighbortalking "Moving on":[HighPoint Painful]
+
+PlotPoint cuttingdeadbody:
+    You are so angry that why your dad abandon you in this way. You go to the kitchen and find the knife in the sink. Back in the room, you stab the knift in your fathers' dead body.
+    [dec Resigned]
+    [inc Angry]
+    [inc Painful]
+    [dec Responsible]
+    [inc Painful]
+    [inc Antisocial]
+[end]
+
+Option cuttingdeadbody huggingdead "Hugging your father's dead body": [Emotive]
+Option cuttingdeadbody laughsatirely "Laughing out loud satirely": [Emotive]
+Option cuttingdeadbody freezed "so shocked and cannot move": [Emotive]
+Option cuttingdeadbody collectingstuff "collecting stuff in the room": [Motivated]
+Option cuttingdeadbody smashingthings "smashing stuff in the room": [Aggressive]
+Option cuttingdeadbody cuttingdeadbody "got knife in the kitchen and keep cutting the dead body": [Aggressive]
+Option cuttingdeadbody neighbortalking "Moving on": [HighPoint Painful]
+
+PlotPoint neighbortalking:
+    [HighPoint Painful]
+    You are feeling so bad and resigned, and after stay at home for a while, you want to walk outside a little bit to change a mood.
+    As you walk towards the door, you heard neighbors gathering together at your house and talk about your sins. "He defintely deserve it, he had stole so many of our stuff", one said. "why it is just pay back on his father, he should go die too", another one said.
+    Then you satirely smile a little bit and open the door, the gathering and whispering people suddently all gone. They are walking to different places just as you saw everyday before. 
+    [inc Resistant]
+    [dec Angry]
+    [inc Antisocial 2]
+    [dec Responsible]
+    [dec Resigned]
+    # [Print Responsible]
+[end]
+
+Option neighbortalking shoutingsatirely "You shout at those people who cursed behind you": [Emotive]
+Option neighbortalking talksadly "You talk in a depressed way to them":[Emotive]
+Option neighbortalking beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option neighbortalking killingothers "You want to choose a bad luck person to kill": [Aggressive]
+Option neighbortalking standingthere "You just stand there": [Emotive]
+
+PlotPoint shoutingsatirely:
+    You shout at the walking away neighbors. "You all are the worst, laughing at me when bad things happens to me, you all gonna be paying back in the future".
+    [inc Resistant]
+    [inc Antisocial]
+    [dec Bored]
+    [inc Angry]
+[end]
+
+Option shoutingsatirely beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option shoutingsatirely killingothers "You want to choose a bad luck person to kill": [Aggressive]
+
+
+PlotPoint talkingsadly:
+    "why you all have to do this to me! I already in bad luck, in the worst luck".
+    And some of the people who walked away just now stands there, and said, "it's not bad luck kid, you did so many bad things and the god want to punish you. It would be your turn someday, too".
+    "Why you can educate me? You never help me or my family. How good person you are anyways?"
+    [inc Resigned]
+    [inc Resistant]
+    [inc Antisocial]
+[end]
+
+Option talkingsadly beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option talkingsadly killingothers "You want to choose a bad luck person to kill": [Aggressive]
+
+PlotPoint beatingeveryonestreet:
+    You are just so angry and you think they do not deserve your patience and want to fight one. You choose the closeset one and run to him.
+    [inc Resistant]
+    [inc Antisocial]
+    [inc Angry]
+    [dec Responsible]
+    [dec Resigned]
+[end]
+
+Option beatingeveryonestreet beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option beatingeveryonestreet killingothers "You want to choose a bad luck person to kill": [Aggressive]
+Option beatingeveryonestreet meetteacher "You saw a man wearing special clothes and want to fight with him":[Aggressive]
+
+PlotPoint killingothers:
+    You pick the one that near you and run to him with your knife in hand.
+    [inc Resistant]
+    [inc Antisocial]
+    [inc Angry]
+    [dec Responsible]
+    [dec Resigned]
+    # [Print Angry]
+    # [Print Antisocial]
+    # [Print Resistant]
+[end]
+
+Option killingothers beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option killingothers killingothers "You want to choose a bad luck person to kill": [Aggressive]
+Option killingothers meetteacher "You saw a man wearing special clothes and want to fight with him":[Aggressive]
+
+PlotPoint standingthere:
+    You are so shocked but even feel a little bit relief since you already know how people feel about you now. With an unnoticed smile on your face, you now know what to do right now.
+    [inc Resigned]
+    [inc Bored]
+    [dec Bored]
+    [inc Antisocial]
+[end]
+
+Option talkingsadly beatingeveryonestreet "You choose a victim to punch him":[Aggressive]
+Option talkingsadly killingothers "You want to choose a bad luck person to kill": [Aggressive]
+
+PlotPoint meetteacher:
+    [HighPoint Antisocial]
+    You saw that guy and try to beat that guy but being beaten. Since seeing you were shocked, that person beat you on the face again.
+    [inc Angry]
+    [dec Bored]
+    [dec Resigned]
+    [inc Resistant]
+    [dec Painful]
+    [Do teachertalkfirst]
+[end]
+
+PlotPoint teachertalkfirst:
+    You are a little angry and want to see that guys' face clearly. So you lift up your face but just saw a big smily face and he said "hello kiddo". 
+    This made you more mad and try to punch him several times but he escape from all of those. You are surprised since you think yourself is 
+    the best fighter in this town. You ask him who he is and he said he's your future teacher. You...
+    [dec Resigned]
+    [dec Angry]
+    [inc Responsible 2]
+    [dec Painful]
+[end]
+
+Option teachertalkfirst laughsarcastical "you sarcastically laugh at him":[Emotive]
+Option teachertalkfirst cryouthappening "you suddenly mentally collapse and cried out":[Emotive]
+Option teachertalkfirst fightbackagain "you still wanna fight back": [Aggressive]
+Option teachertalkfirst talktoteacher "talk with the man":[Sociable]
+Option teachertalkfirst helpteacherout "try to help out and carry his stuff":[Motivated]
+
+PlotPoint laughsarcastical:
+    You sarcastically laugh at him. The teacher wants him to go with him but he failed, so he knocked you out.
+    [inc Resistant]
+    [inc Antisocial]
+    [inc Resigned]
+    [inc Angry]
+    [Do aggressiveback]
+[end]
+
+PlotPoint cryouthappening:
+    You mentally collapsed and cried out. You told him everything happened to you.
+    [inc Resigned]
+    [inc Regretful]
+    [inc Painful]
+    [inc Responsible]
+    [dec Resistant 2]
+    [dec Antisocial 2]
+    [Do peaceback]
+[end]
+
+PlotPoint fightbackagain:
+    You still try to fight back but you cannot even reach any part of that guy because he is so fast moving.
+    You want to fight back and he just knock you down.
+    [inc Resigned]
+    [inc Bored]
+    [dec Angry]
+    [inc Responsible]
+    [dec Resistant]
+    [dec Painful]
+    [dec Antisocial]
+    [Do aggressiveback]
+[end]
+
+PlotPoint talktoteacher:
+    You talk with the teacher and want to see how he learned dojo so well.
+    [inc Bored]
+    [dec Angry]
+    [dec Resigned]
+    [dec Regretful]
+    [inc Responsible 2]
+    [dec Resistant]
+    [dec Painful]
+    [dec Antisocial 2]
+    [Do peaceback]
+[end]
+
+PlotPoint helpteacherout:
+    You try to help teacher out with his stuff, and he let you carry the cleaning stuff and his basket for him.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Resigned]
+    [dec Regretful]
+    [inc Responsible 3]
+    [dec Resistant]
+    [dec Painful]
+    [dec Antisocial 2]
+    [Do peaceback]
+[end]
+
+PlotPoint aggressiveback:
+    That guy carry you back to his Dojo place and as you wake up, you are confused about this and you still wanna fight back.
+    Thus, shouting out your teachers name, you find a girl in another room lying on the floor and that guy is taking care of her, "blahblah, drink this, my poor daughter".
+    That guy noticed you from the back, "you finally wake up, kiddo. Pretty good, still able to wake up in the same day that I knock you down. This means I did not make a wrong choice",
+    He turned back and said, "this is my daughter blahblah, she's sick for a lot of years, my wife already left this poor situation. So there is only we two in this family now."
+    He turned his head a little to you and said "Do you wanna join this family kiddo?"
+    [dec Bored]
+    [dec Angry]
+    [dec Regretful]
+    [inc Responsible 3]
+    [dec Resistant]
+    [dec Painful]
+    [dec Antisocial 2]
+    [dec Resigned]
+    # [Print Angry]
+    # [Print Antisocial]
+    # [Print Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option aggressiveback breakingstuffdojo "still hate that guy and try to break stuff":[Aggressive]
+Option aggressiveback wanttofightdojo "still want to fight with the teacher":[Aggressive]
+Option aggressiveback keepshoutingteacher "keep shouting at the teacher":[Emotive]
+Option aggressiveback standingdoor "standing at the door": [Emotive]
+Option aggressiveback keeptalkingteacherdojo "talk with teacher":[Sociable]
+Option aggressiveback helpingouthousework "helping out the housework":[Motivated]
+
+PlotPoint breakingstuffdojo:
+    You hate that guy but since you cannot fight with him, you choose to break stuff in the dojo. You then saw the man just stand there watching you doing all these.
+    The guy did not blame you at all. Instead, he help you collect everything together, and help you clean the broken stuff on the ground.
+    You are so shocked but not able to speak a word.
+    [inc Resigned]
+    [dec Painful 2]
+    [dec Antisocial 2] 
+    [dec Resistant 2]
+    [inc Responsible 2]
+    [Do end_of_story]
+[end]
+
+PlotPoint wanttofightdojo:
+    You want to defeat this guy and want to ask for a official fight.
+    [dec Angry]
+    [dec Resigned 2]
+    [dec Bored]
+    [dec Painful]
+    [dec Resistant]
+    [dec Antisocial]
+    [Do end_of_story]
+[end]
+
+PlotPoint keepshoutingteacher:
+    You keep shouting at the teacher and said he is a coward and try to fight him.
+    [inc Resigned]
+    [inc Bored]
+    [inc Angry]
+    [inc Resistant]
+    [dec Antisocial]
+    [dec Responsible]
+    [Do end_of_story]
+[end]
+
+PlotPoint standingdoor:
+    You stand at the door and look at him.
+    [inc Resigned]
+    [inc Bored]
+    [dec Angry]
+    [dec Resistant]
+    [dec Antisocial]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint keeptalkingteacherdojo:
+    You keep talking with the man and would want to have a more close relationship with him.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Resistant]
+    [dec Antisocial]
+    [inc Responsible]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint helpingouthousework:
+    You think he is a good guy and thus try to help him out on the housework.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Resistant]
+    [dec Antisocial]
+    [inc Responsible 2]
+    [Do startdoingstuff]
+[end]
+
+Option breakingstuffdojo talkwithteacher "talk to him": [Sociable]
+Option breakingstuffdojo helpcleaningbroken "clean up stuff together with him": [Motivated]
+
+PlotPoint talkwithteacher:
+    [dec Resigned]
+    [dec Bored]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Responsible]
+    [dec Painful]
+    [Do peaceback]
+[end]
+
+PlotPoint helpcleaningbroken:
+    [dec Resigned]
+    [dec Bored]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Responsible 2]
+    [dec Painful]
+    [Do peaceback]
+[end]
+
+PlotPoint peaceback:
+    As you came into the dojo, you find a girl in the room lying on the floor and that guy is taking care of her, "blahblah, drink this, my poor daughter".
+    He turned back to you and said, "this is my daughter blahblah, she's sick for a lot of years, my wife already left this poor situation. So there is only we two in this family now."
+    He turned his head a little to you and said "Do you wanna join this family kiddo?"
+    [dec Bored]
+    [dec Angry]
+    [dec Regretful]
+    [inc Responsible 2]
+    [dec Resistant]
+    [dec Painful]
+    [dec Antisocial 2]
+    [dec Resigned]
+[end]
+
+Option peaceback standingdoor "standing at the door": [Emotive]
+Option peaceback keeptalkingteacherdojoo "talk with teacher":[Sociable]
+Option peaceback companywithdaughter "talk with teacher":[Sociable]
+Option peaceback helpingouthousework "helping out the housework":[Motivated]
+Option peaceback stillaggressive "still being aggressive to your teacher because you dont think anyone would be so nice to you": [Aggressive] 
+
+PlotPoint standingdoor:
+    You stand at the door and hear this man talking with his daughter.
+    [dec Resigned]
+    [inc Bored]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option standingdoor offeringfood "seeing teacher bring some food for you": [ExtremePoint Responsible]
+Option standingdoor keeptalkingteacherdojo "talk with teacher":[Sociable]
+Option standingdoor companywithdaughter "talk with teacher":[Sociable]
+Option standingdoor helpingouthousework "helping out the housework":[Motivated]
+
+PlotPoint keeptalkingteacherdojoo:
+    You agreed and keep talking with your teacher in dojo.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [inc Responsible]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option keeptalkingteacherdojo offeringfood "seeing teacher bring some food for you": [ExtremePoint Responsible]
+Option keeptalkingteacherdojo keeptalkingteacherdojo "talk with teacher":[Sociable]
+Option keeptalkingteacherdojo companywithdaughter "talk with teacher":[Sociable]
+Option keeptalkingteacherdojo helpingouthousework "helping out the housework":[Motivated]
+
+PlotPoint companywithdaughter:
+    You agreed and found out your teachers' daughter looking at you. You then start talking to her.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [inc Responsible]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option companywithdaughter offeringfood "seeing teacher bring some food for you": [ExtremePoint Responsible]
+Option companywithdaughter keeptalkingteacherdojo "talk with teacher":[Sociable]
+Option companywithdaughter companywithdaughter "talk with teacher":[Sociable]
+Option companywithdaughter helpingouthousework "helping out the housework":[Motivated]
+
+PlotPoint helpingouthousework:
+    You agreed and found out your teachers' daughter looking at you. You then start talking to her.
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [inc Responsible]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option helpingouthousework offeringfood "seeing teacher bring some food for you": [ExtremePoint Responsible]
+Option helpingouthousework keeptalkingteacherdojo "talk with teacher":[Sociable]
+Option helpingouthousework companywithdaughter "talk with teacher":[Sociable]
+Option helpingouthousework helpingouthousework "helping out the housework":[Motivated]
+
+PlotPoint offeringfood:
+    You then saw your teacher come back to the room with prepared ramen and some fried vegetables for you. 
+    He then put it on the ground and said "have some, kid". After you finish eating, he leads you to a room
+    and said to you, "This dojo place is now your home, you, me, and yumi are now a family. This would be your room".
+    [dec Resigned]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [inc Responsible]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+Option offeringfood sitatgarden "you plan to sit outside a little bit and spend some time of yourself": [Emotive]
+Option offeringfood apologizeforprevious "you go to find your teacher and try to apologize for your previous behavior": [Emotive]
+Option offeringfood decidebehavingwell "you start to well behave and decide you want to treat them as you family": [Motivated]
+Option offeringfood begrateful "you want to tell your teacher how grateful you are": [Sociable]
+
+PlotPoint sitatgarden:
+    You feel like you want to sit outside for a while and spend sometime with yourself. 
+    [dec Resigned]
+    [dec Bored]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [dec Resistant]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint apologizeforprevious:
+    You go to find your teacher, and try to apologize for your previous behavior.
+    [dec Resigned]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Regretful]
+    [inc Responsible 0.2]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint decidebehavingwell:
+    You start to well behave and see what you can do for your new family.
+    [dec Resigned]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Regretful]
+    [inc Responsible]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint begrateful:
+    You want to tell your teacher how grateful you are.
+    [dec Resigned]
+    [dec Angry]
+    [dec Painful]
+    [dec Antisocial]
+    [dec Resistant]
+    [inc Regretful]
+    [inc Responsible]
+    [Do startdoingstuff]
+[end]
+
+PlotPoint startdoingstuff:
+    You do more stuff for the family and talking with other students and your teacher.
+    [set Resigned = 0]
+    [set Bored = 1]
+    [set Angry = 0]
+    [set Regretful = 1]
+    [set Responsible = 10]
+    [set Resistant = 0]
+    [set Painful = 1]
+    [set Antisocial = 0]
+    [Do takingcaredaughter]
+[end]
+
+PlotPoint takingcaredaughter:
+    You start to talk more and take better care of his daughter. You find the cuteness from her and would always want to spend time with her....
+    [dec Bored]
+    [dec Painful]
+[end]
+
+Option takingcaredaughter tellwhathashappened "you decide to tell her what has happen to him before".
+Option takingcaredaughter feelacceptiveandtell "you feel you are accepted by this family and feel warm, you wanna tell your teacher and the daughter how good you feel now".
+Option takingcaredaughter learnharder "you so grateful and learn harder from your teacher":[Motivated]
+
+PlotPoint tellwhathashappened:
+    you told yumi what happened to you and she feel so bad for you and what happened to you before. She cried and said, she and her dad would always be there for him.
+    [inc Regreful]
+    [Do neighborfight]
+[end]
+
+PlotPoint feelacceptiveandtell:
+    you really feel safe and being loved by your teacher and yumi. You tell them so...
+    [Do neighborfight]
+[end]
+
+PlotPoint learnharder:
+    You wanna learn more from your teacher and teach other studnets what you learned too so that your teacher would be more happy.
+    [Do neighborfight]
+[end]
+
+PlotPoint neighborfight:
+    Neighbor dojo come here to fight and you fight back. You then successfully win all the people from the other dojo and your teacher proud of you.
+    [inc Angry 3]
+    [inc Resistant]
+    [inc Antisocial 1]
+    [Do fallinlove]
+[end]
+
+PlotPoint fallinlove:
+    You was cleaning the room with Yumi and Yumi bumpped into a slippy area and slipped. You wanna save her our of the danger so you cover her intuitively.
+    You two are really near to each other and the atmosphere goes.... Then, you are so shy and cannot even sleep that day. Then you know, this is something 
+    called love, and you finally realize you fall in love with yumi. Since you, yumi, your teacher, and other students is going to Tokyo for the new year fireworks,
+    you decide to express yourself during that time. So when you y'all go to Tokyo in the new year, your teacher is with other students and talk with them, 
+    you and yumi are walking behind everyone else together in the crowd. When the fireworks appears in the sky, everyone stopped stepping forward. Though you are in the crowd, 
+    you can only feel you two under this beautiful scene, and you ask yumi, "can you let me take care of you for rest of your life, yumi?" You are looking at her greedly,
+    and she is moving and looking you back with nodding and a happy smile on her face. 
+[end]
+
+Option fallinlove tellingbetterbody "you wanna tell her her body is much better than before".
+Option fallinlove takeherotherplaces "you wanna take her to other places in Tokyo".
+Option fallinlove askherifcanaskteacher "you wanna ask her when to let your teacher know about this".
+
+PlotPoint tellingbetterbody:
+    You tell her that her body is much more better, and you think your are definitely going to be able to go out to other placees to travel with you at the start of next spring.
+    [dec Angry 2]
+    [Do comingbackdojo]
+[end]
+
+PlotPoint takeherotherplaces:
+    You are so happy about this and you know she always mention a senso-ji area's mocha place really good and wanna take here there. You know your teacher would be over worry her if you
+    tell him, so you decide to take her secretly and adventure with just her.
+    [Do comingbackdojo]
+[end]
+
+PlotPoint askherifcanaskteacher:
+    You wanna ask her when to let your teacher to know about their affair. You are so excited and you know your teacher is going to be so happy about this and feel relief since he is 
+    always worried about no one is going to look after her daughter when something happen to him.
+    [Do comingbackdojo]
+    [end]
+
+PlotPoint comingbackdojo:
+    When coming back to your dojo place, your teacher can tell the atmosphere btw you and yumi,
+    and one day, he gathered you two and without even giving you and yumi chance to tell, he said, "Akaza, I know you and yumi love each other and now I do accept yours marriage because 
+    I always treated you as my best student and nearly a son and yumi is my blood daughter, I am so relief now because I know you have the ability and sense of duty to take care of yumi 
+    because you care about this family and you love her from deep inside". You are so happy about this. Without giving to much reaction, you cannot speak even a word and your tears comes out
+    without you notice and you somewhere cold and filled with snow for a long time in your heart is warmed and sun comes in. What you now can do is nodding without any words but tears dripping 
+    in front of you. Then, your teacher said, "also, Akaza, I wanna let you know, this dojo place would eventually goes into your hand, and when I leave, you should take over this dojo and the responsibility
+    of making our technique to more people". 
+[end]
+
+Option comingbackdojo thinkover "you wanna think over this more".
+Option comingbackdojo sograteful "you are so grateful to your teacher".
+Option comingbackdojo startconfess "you are so grateful and wanna confess for your previous fault of being immature and hurting him".
+Option comingbackdojo statingyoureffort "you state your determination of learning more from your teacher so that you would be able to do so".
+
+PlotPoint thinkover:
+    You saied you wanna think it over. Your teacher said you are definitely the best choice and you know you are. Thus, you accept it wity grateful.
+    [Do wentbacktomb]
+[end]
+
+PlotPoint sograteful:
+    You are so grateful of your teacher and you said you would love to take this responsibility
+    [Do wentbacktomb]
+[end]
+
+PlotPoint startconfess:
+    You cried again because you are so grateful, you always feel you are so bad previously to your teacher and do not know how he can accept you and make you back a good person and even offer you a warm family to grow up.
+    [Do wentbacktomb]
+[end]
+
+PlotPoint statingyoureffort:
+    You are so determined and so wanna help more people to understand your teachers' dojo technique and the principles underlines it. This warmed you so much when you were at your lowest point of life, so you wanna use this
+    to help more people.
+    [Do wentbacktomb]
+[end]
+
+PlotPoint wentbacktomb:
+    You tell your teacher you wanna go back to your fathers tomb to tell him this good news and your life is all on track rn. As the travel to your hometown, you feelins are complex. 
+    When you arrived and saw your fathers' tomb.
+    You kneeling down at your fathers tomb and ....cried and saying eveyring ....
+    However, bad things happened again, as you come back, you saw everyone, your teacher, yumi, other students, all lying on the ground died.
+    Some are beaten really hard, they body parts even failed out. You thus wonder why that is possible. 
+    Then you saw some purplish thing on your teachers' mouth. After you checked the water well y'all lived on. You found the water already went purple.
+    You thus notice, all of them was poisoned and the one who drink not as much, was probably weak and beaten to death. 
+    This neighbor dojo knows that you are the strongest and the wildest in this dojo. As soon as they know you live, they poisoned trip would be noticed.
+    They hence choose the time you live and ruined the whole dojo. It is just a dojo for them, but it is a family for you. A family that saved you from darkness, and warmed you from coldness.
+    You even think of the promise you made between you and your teacher on how to make this dojo a better place, and between you and yumi, where you gonna take her to travel when next spring comes and her
+     sickness gets better. It is all ruined now, all ruined by weakless people who only can play tricks behind, who is never powerful enough to fight in a legal way. Yout thus pick up the wooden stick next to the door and rush
+      into the neighbor dojo. You killed even teared everyones body out, it is so bloody when other people come. They even not checked on this case and the judge even make this case into top secret that only feel people can access to it 
+      since it is too violent. After that, there is a myth about this town have a ghost, that tore the whole dojo place up and eat their body parts. However, the ghost, Akaza, did end up to be a demon. However, he do not remember his 
+      previous stories. He do not remember why he hate weakness people, and why he never eat any women even though it would make him ranking better between other demons. The only thing left is his technique of attacking others appears as a flower.
+      A flower that yumi always wear on her head as a hair clip.
+    [Do end_of_story]
+[end]
+
+PlotPoint end_of_story:
+    End of Story. Try Reload and Play Again.
+[end]
